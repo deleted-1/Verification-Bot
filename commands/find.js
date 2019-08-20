@@ -1,20 +1,20 @@
-const Discord = require("discord.js"); 
-const sqlite3 = require('sqlite3');
+const SQLite = require('better-sqlite3');
+const redditLogin = new SQLite('./Util/redditLogin.db');
 
-module.exports.run = async (client, message, args) => {
-    if(!message.guild)  return message.channel.send('This command only works in a guild!');
-    
-    const db = new sqlite3.Database('loginDetails.sqlite');
+module.exports = {
+    name: 'find',
+    alias: ['f'],
+    description:'Find the discord user the reddit account belongs to.',
+    guildOnly: true,
+    run: async (client, msg, args) => {
+        
+        if (!args.length) msg.reply('you have to give the name of a reddit account.');
 
-    db.get('SELECT * FROM users WHERE username = ?',[args[0]],(err,row)=>{
-        if(err) return console.error(err.message)
+        let account = args[0].replace(/.*u(ser?)\/(.+)/,'$1');
 
-        return row
-            ?   message.channel.send(`${args[0]} belongs to ${message.guild.members.find(m=>m.user.id===row.userid)}`)
-            :   message.channel.send('That account belongs to noone in the server!')
-    });
-} 
-
-module.exports.help = {
-   name: "find"
+        let userid = redditLogin.prepare('SELECT discord FROM redditLogin WHERE reddit = ?').get(account);
+        let user = client.users.get(userid).tag;
+        msg.reply(`${account}'s discord tag is ${user}`);
+          
+    }
 }

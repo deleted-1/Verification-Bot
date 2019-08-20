@@ -1,16 +1,19 @@
-const Discord = require("discord.js"); 
-const sqlite3 = require('sqlite3');
+const SQLite = require('better-sqlite3');
+const redditLogin = new SQLite('./Util/redditLogin.db');
 
-module.exports.run = async (client, message, args) => {
-    const db = new sqlite3.Database('loginDetails.sqlite');
+module.exports = {
+    name: 'logout',
+    alias: ['signout'],
+    guildOnly: false,
+    run: async (client, msg, args) => {
 
-    db.run('UPDATE users SET username = "" WHERE userid = ?',[message.author.id],(err)=>{
-        if(err) console.error(err.message);
-    });
+        try{
+            redditLogin.prepare("DELETE FROM redditLogin WHERE discord = ?").run(msg.author.id);
+            msg.reply('successfully logged out.');       
+        }catch(err){
+            console.log(err.message);
+            msg.reply('you were not logged in.');
+        }
 
-    message.channel.send('You have been logged out!');
-} 
-
-module.exports.help = {
-   name: "logout"
+    }
 }

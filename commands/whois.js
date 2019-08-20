@@ -1,26 +1,51 @@
-const Discord = require("discord.js"); 
-const sqlite3 = require('sqlite3')
+const SQLite = require('better-sqlite3');
+const { RichEmbed } = require('discord.js');
 
-module.exports.run = async (client, message, args) => {
-    if(!message.guild)  return message.channel.send('This command only works in a guild!');
-    if(message.mentions.members) args[0] = message.mentions.members.first().user;
-    else    args[0] = client.users.find(u=>u.username.includes(args[0])&&message.guild.members.get(u.id));
+const redditLogin = new SQLite('./Util/redditLogin.db');
 
-    if(!args[0]) return message.channel.send('Invalid user.');
+module.exports = {
+    name: 'whois',
+    alias: ['who'],
+    guildOnly:true,
+    run: async (client, msg, args) => {
+
+        let user = msg.mentions.users.first() || (args.length ? client.users.filter(u => u.username == args[0].toLowerCase()) : msg.author);
+
+        if (!user.username) {
+
+            if (user.size == 1) user = user.first();
+            else if (user.size == 0) return msg.reply('could not find a user with the name '+args[0]);
+            else {
+                user = user.map(m => m.user.tag);
+
+                let description = '';
+                for(let i = 0; i<5; ++i){
+                    if(!user[i]) break;
+                    description += `\`${i+1}.\` `+user[i];
+                }
+                
+                let userEmbed = new RichEmbed()
+                    .setDescription(description)
+                    .setColor("RANDOM")
+                    .setTimestamp()
+                    .setFooter('Type a number 1-5 to select a user.',client.user.avatarURL)
     
-    args[0] = args[0].id
-    const db = new sqlite3.Database('loginDetails.sqlite');
-    
-    db.get('SELECT * FROM users WHERE userid = ?',[args[0]],(err,row)=>{
-        if(err) return console.error(err.message);        
-        
-        return row 
-            ?   message.channel.send(`${message.author}'s reddit account is ${row.username}`)
-            :   message.channel.send('This person did not link their reddit account!');
-   
-    });
-} 
+                await msg.channel.send(userEmbed);
+                await msg.channel.awaitMessages(filter,{max:1,time:10000}).then(async response => {
+                    user = await msg.guild.user.find(m => m.user.tag == user[parseInt(response.first())-1])
+                }).catch(async err => {
+                    if (err){ 
+                        await msg.reply('timed out. cancelling command.');
+                        throw 'Timed Out';
+                    }
+                });
+            }
+        }
 
-module.exports.help = {
-   name: "whois"
+        let account = redditLogin.prepare("SELECT reddit FROM redditLogin WHERE discord = ?").get(user.id);
+        if (!account) return msg.reply(`${user.tag} has not linked their reddit account.`);
+        console.log(account)
+        msg.reply(`${user.tag}'s reddit account is ${account.reddit}`);
+
+    }
 }

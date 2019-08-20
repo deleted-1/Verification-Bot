@@ -1,0 +1,23 @@
+{
+  "name": "verification-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gerauschlos/Verification-Bot.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gerauschlos/Verification-Bot/issues"
+  },
+  "homepage": "https://github.com/gerauschlos/Verification-Bot#readme",
+  "dependencies": {
+    "better-sqlite3": "^5.4.2",
+    "snoowrap": "^1.19.0"
+  }
+}

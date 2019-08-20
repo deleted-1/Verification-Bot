@@ -1,42 +1,52 @@
-const Discord = require("discord.js"); 
-const sqlite3 = require('sqlite3');
-const reddit = require('../reddit.js');
+const SQLite = require('better-sqlite3');
+const snoowrap = require('snoowrap');
+const credentials = require('../Util/credentials.json');
 
-module.exports.run = (client, message, args) => {
-    const db = new sqlite3.Database('loginDetails.sqlite');
-    
+const redditLogin = new SQLite('./Util/redditLogin.db');
+const r = new snoowrap(credentials);
 
-    db.get('SELECT * FROM users WHERE userid = ?',[message.author.id],async (err,row)=>{
-        if(err) console.error(err.message);
+module.exports = {
+    name: 'login',
+    alias: ['signin','l'],
+    guildOnly: false,
+    run: async (client, msg, args) => {
 
-        if(row.username)    return  await message.author.send('You are already logged in. `~logout` to logout.');
+        let account = redditLogin.prepare('SELECT reddit FROM redditLogin WHERE discord = ?').get(msg.author.id);
+
+        if (!args.length) return msg.reply('you have to enter the reddit account you would like to sign into.');
+        if (account) return msg.reply('you are already logged in. Logout to login as a different reddit user.');
+
         let code = '';
-        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for(let i = 0; i < 20; i++) code += characters.charAt(Math.floor(Math.random() * characters.length));
-        let messagetoSend = `Here is your verification code: "${code}"`;
+        for(let i = 0; i < Math.floor(Math.random()*10)+10; i++)
+            code += Math.floor(Math.random()*36).toString(36);
 
-        if(reddit.sendDM(args[0],messagetoSend)){
-        
-            const filter = msg => msg.author.id === message.author.id;
-            await message.author.send('I sent a verification code to your reddit account. Please paste it here.');
-            await message.author.dmChannel.awaitMessages(filter,{max:1,time:60000}).then(collected=>{
-                if(!collected.first().content.includes(code))   return message.author.send('Invalid code. Login failed!');
-                message.author.send('Successfully linked!');
-                db.run('UPDATE users SET username = ? WHERE userid = ?',[args[0],message.author.id],(err)=>{
-                    if(err) console.error(err.message);
-                });
+        r.composeMessage({
+            to: args[0].replace(/.*u(ser?)\/(.+)/,'$1'),
+            subject: 'Verification Code',
+            text: code
+        });
+
+        if (msg.guild) await msg.channel.send('Sent information to your DMs :thumbsup:');
+        await msg.author.send('I have sent a message to your reddit account. Please check your mail then place verification code here.');
+        const filter = m => m.content === code;
+        await msg.author.dmChannel.awaitMessages(filter, {max:1, time: 60000})
+            .then(async responses => {
+                
+                if (responses.first().content == code) {
+
+                    redditLogin.prepare("INSERT INTO redditLogin(discord,reddit) VALUES(@discord, @reddit)").run({
+                        discord:msg.author.id,
+                        reddit:args[0]
+                    });
+
+                    msg.author.send('you are now successfully logged into '+args[0].replace(/.*u(ser?)\/(.+)/,'$1'));
+
+                }
             })
-            .catch(err=>{
-                if(err) message.author.send('You took too long. Session timed out!');
+            .catch(err => {
+                console.log(err)
+                if (err) msg.author.send('command timed out or you entered the incorrect verification code.');
             });
-        }else{
-            await message.author.send('That is an invalid reddit account. Please try again or check capitalization!');
-        }
 
-        db.close();
-    });
-} 
-
-module.exports.help = {
-   name: "login"
+    }
 }
