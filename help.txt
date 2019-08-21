@@ -1,7 +1,0 @@
-This is a verification bot that verifies your reddit account with
-your discord account. Here are all the commands:
-
-`~logout` - logs you out of the account you have linked.
-`~login <username>` - logs you into your reddit account.
-`~whois <@mention> | <nickname>`  - gives the reddit of the person you mention.
-`~find <username>` - finds the discord account of who the reddit account belongs to.
