@@ -1,19 +1,21 @@
 const SQLite = require('better-sqlite3');
-const redditLogin = new SQLite('./Util/redditLogin.db');
+const redditLogin = new SQLite('./redditLogin.db');
 
 module.exports = {
     name: 'find',
     alias: ['f'],
-    description:'Find the discord user the reddit account belongs to.',
     guildOnly: true,
     run: async (client, msg, args) => {
         
-        if (!args.length) msg.reply('you have to give the name of a reddit account.');
+        if (!args.length) return msg.reply('you have to give the name of a reddit account.');
 
         let account = args[0].replace(/.*u(ser?)\/(.+)/,'$1');
 
-        let userid = redditLogin.prepare('SELECT discord FROM redditLogin WHERE reddit = ?').get(account);
-        let user = client.users.get(userid).tag;
+        let user = redditLogin.prepare('SELECT discord FROM redditLogin WHERE reddit = ?').get(account);
+
+        if (!user) return msg.reply(`${account} is not linked to anyone.`);
+
+        user = client.users.get(user.discord).tag;
         msg.reply(`${account}'s discord tag is ${user}`);
           
     }

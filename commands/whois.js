@@ -1,7 +1,7 @@
 const SQLite = require('better-sqlite3');
 const { RichEmbed } = require('discord.js');
 
-const redditLogin = new SQLite('./Util/redditLogin.db');
+const redditLogin = new SQLite('./redditLogin.db');
 
 module.exports = {
     name: 'whois',

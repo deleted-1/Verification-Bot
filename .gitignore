@@ -4,5 +4,8 @@ node_modules
 
 # Ignore credentials and tokens
 
-Util
+Util/*.json
 
+# Ignore Databases
+
+Util/*.db

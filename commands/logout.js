@@ -1,5 +1,5 @@
 const SQLite = require('better-sqlite3');
-const redditLogin = new SQLite('./Util/redditLogin.db');
+const redditLogin = new SQLite('./redditLogin.db');
 
 module.exports = {
     name: 'logout',

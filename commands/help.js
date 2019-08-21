@@ -1,4 +1,4 @@
-const Discord = require("discord.js"); 
+const { RichEmbed } = require("discord.js"); 
 const fs = require('fs');
 
 module.exports = {
@@ -6,10 +6,10 @@ module.exports = {
     alias: ['h','?'],
     guildOnly: false,
     run: async (client, msg, args) => {
-        fs.readFile('./help.txt',(err,data)=>{
+        fs.readFile('../help.txt',(err,data)=>{
             if(err) console.error(err.message);
     
-            const embed = new Discord.RichEmbed()
+            const embed = new RichEmbed()
                 .setDescription(data)
                 .setColor("RANDOM");
             msg.channel.send(embed);

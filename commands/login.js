@@ -2,7 +2,7 @@ const SQLite = require('better-sqlite3');
 const snoowrap = require('snoowrap');
 const credentials = require('../Util/credentials.json');
 
-const redditLogin = new SQLite('./Util/redditLogin.db');
+const redditLogin = new SQLite('./redditLogin.db');
 const r = new snoowrap(credentials);
 
 module.exports = {
@@ -39,13 +39,12 @@ module.exports = {
                         reddit:args[0]
                     });
 
-                    msg.author.send('you are now successfully logged into '+args[0].replace(/.*u(ser?)\/(.+)/,'$1'));
+                    msg.author.send('You are now successfully logged into '+args[0].replace(/.*u(ser?)\/(.+)/,'$1'));
 
                 }
             })
             .catch(err => {
-                console.log(err)
-                if (err) msg.author.send('command timed out or you entered the incorrect verification code.');
+                if (err) msg.author.send('Command timed out or you entered the incorrect verification code.');
             });
 
     }
