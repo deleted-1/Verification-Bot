@@ -2,7 +2,7 @@ const { readdirSync } = require('fs');
 
 module.exports = async (client) => {
 
-    for (const event of readdirSync('../events')) {
+    for (const event of readdirSync('./events')) {
 
         if (!event.split(".").pop() == "js") return;
         let evt = require('../events/'+event);
