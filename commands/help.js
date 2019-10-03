@@ -6,7 +6,7 @@ module.exports = {
     alias: ['h','?'],
     guildOnly: false,
     run: async (client, msg, args) => {
-        fs.readFile('../help.txt',(err,data)=>{
+        fs.readFile('./help.txt',(err,data)=>{
             if(err) console.error(err.message);
     
             const embed = new RichEmbed()
